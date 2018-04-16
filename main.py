@@ -4,8 +4,8 @@ from easy_sdl.sprite import Sprite
 
 
 
-screen = setup(win_width=1200,
-               win_height=800,
+screen = setup(win_width=2220,
+               win_height=1080,
                level_width=4440,
                level_height=2160)
 

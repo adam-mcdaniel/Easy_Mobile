@@ -352,6 +352,13 @@ class Screen(App):
         self.s.run = f
         super(Screen, self).run()
 
+    def __len__(self):
+        return self.s.__len__()
+
+    def __getitem__(self, i):
+        return self.s.__getitem__(i)
+    
+        
 if __name__ == "__main__":
     pygame.init()
     pygame.mouse.set_visible(False)

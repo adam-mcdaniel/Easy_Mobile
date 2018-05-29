@@ -1,6 +1,6 @@
-from easy_sdl.setup import *
-from easy_sdl.tools import *
-from easy_sdl.sprite import Sprite
+from easy_mobile.setup import *
+from easy_mobile.tools import *
+from easy_mobile.sprite import Sprite
 
 
 

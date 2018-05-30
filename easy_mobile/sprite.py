@@ -27,8 +27,8 @@ class Sprite(Image):
         self.touch = MouseMotionEvent(0, 0, (x, y))
         self.touch.pos = (x, y)
         self.pos = (0, 0)
-        self.source = kwargs["image"]
-        self.texture = CoreImage(kwargs["image"]).texture
+        self.source = os.path.abspath(kwargs["image"])
+        self.texture = CoreImage(self.source).texture
         self.rect = Rect(x, y, self.texture.width, self.texture.height)
         self.width = self.texture.width
         self.height = self.texture.height
@@ -295,6 +295,10 @@ class ScreenWidget(Widget):
         for item in self:
             if item.collide_point(*touch.pos):
                 item.touch = touch
+                item.touch_up = False
+            else:
+                if item.touch == touch:
+                    item.touch_up = True                    
         return True
         
     def on_touch_down(self, touch):
@@ -306,8 +310,9 @@ class ScreenWidget(Widget):
         
     def on_touch_up(self, touch):
         for item in self:
-            item.touch_up = True
-            item.touch = touch            
+            if touch == item.touch:
+                item.touch_up = True
+                item.touch = touch
         return True
 
     # def getTouch(self):

@@ -1,2 +1,2 @@
-__all__ = ["camera", "setup", "sprite", "tools"]
+__all__ = ["camera", "setup", "sprite", "tools", "sound"]
 from . import *

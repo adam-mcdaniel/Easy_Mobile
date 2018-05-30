@@ -48,7 +48,10 @@ class Sprite(Image):
 
     def setImage(self, image):
         self.source = image
-        self.texture = Image(image).texture
+        self.texture = CoreImage(self.source).texture
+        self.rect = Rect(self.rect.x, self.rect.y, self.texture.width, self.texture.height)
+        self.width = self.texture.width
+        self.height = self.texture.height
 
     def update(self, entities):
         pass
@@ -136,7 +139,7 @@ class Joystick(Sprite):
             self.y_val = 0
 
     def getDirection(self):
-        return self.x_val, 0
+        return self.x_val, self.y_val
 
 
 class ButtonSprite(Sprite):

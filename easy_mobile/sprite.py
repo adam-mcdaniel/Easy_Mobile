@@ -6,12 +6,16 @@ from .camera import *
 from .camera import Rect
 from collections import deque
 from kivy.app import App
+import kivy.input.postproc
 from kivy.clock import Clock
 from kivy.uix.image import Image
 from kivy.core.image import Image as CoreImage
 from kivy.uix.widget import Widget
 from kivy.graphics.texture import Texture
 from kivy.input.providers.mouse import MouseMotionEvent
+
+kivy.input.postproc.kivy_postproc_modules["doubletap"].double_tap_time = 200
+kivy.input.postproc.kivy_postproc_modules["doubletap"].double_tap_distance = 100
 
 keyDown = lambda event, key: False
 keyUp = lambda event, key: False
@@ -20,19 +24,22 @@ TheScreen = None
 
 class Sprite(Image):
     rect = Rect(0, 0, 0, 0)
-    def __init__(self, x, y, **kwargs):
+    def __init__(self, x, y, image=""):
         super(Sprite, self).__init__()
         self.static = False
         self.touch_up = True
         self.touch = MouseMotionEvent(0, 0, (x, y))
         self.touch.pos = (x, y)
         self.pos = (0, 0)
-        self.source = os.path.abspath(kwargs["image"])
+        self.source = os.path.abspath(image)
         self.texture = CoreImage(self.source).texture
         self.rect = Rect(x, y, self.texture.width, self.texture.height)
         self.width = self.texture.width
         self.height = self.texture.height
         self.allow_stretch = True
+        self.double_tap = False
+
+        self.first_touch = True
 
     def draw(self, camera):
         if self.static:
@@ -87,11 +94,23 @@ class Sprite(Image):
     def getTouch(self):
         return self.touch
 
+    def getTouchPos(self):
+        return [self.touch.x, self.touch.y]
+
     def getTouchDown(self):
         return not self.touch_up
 
     def getTouchUp(self):
         return self.touch_up
+
+    def getDoubleTap(self):
+        x = self.double_tap
+        if x and self.first_touch:
+            x = False
+            self.first_touch = False
+            
+        self.double_tap = False
+        return x
 
     def __str__(self):
         return "<Sprite at: x={}, y={}>".format(self.rect.x, self.rect.y)
@@ -104,6 +123,9 @@ class Surface(Widget):
 
     def update(self, screen):
         pass
+
+    def draw(self, camera):
+        list(map(lambda s: s.draw(camera), self.sprites))
 
     def pop(self):
         try:
@@ -290,9 +312,18 @@ class ScreenWidget(Widget):
             sprite.update(self)
 
         list(map(lambda a: a.update(self), self.actions))
+        list(map(lambda s: s.draw(self.camera), self.surfaces))
         list(map(lambda s: s.update(self), self.surfaces))
 
         self.run()
+
+    def moveToFront(self, sprite):
+        for i, item in enumerate(self.sprites):
+            if item == sprite:
+                if item == sprite:
+                    self.remove(sprite)
+                    self.append(sprite)
+
 
     def on_touch_move(self, touch):
         for item in self:
@@ -301,7 +332,8 @@ class ScreenWidget(Widget):
                 item.touch_up = False
             else:
                 if item.touch == touch:
-                    item.touch_up = True                    
+                    item.touch_up = True
+
         return True
         
     def on_touch_down(self, touch):
@@ -309,6 +341,9 @@ class ScreenWidget(Widget):
             if item.collide_point(*touch.pos):
                 item.touch_up = False
                 item.touch = touch
+                item.double_tap = not touch.is_double_tap
+                break
+                
         return True
         
     def on_touch_up(self, touch):
@@ -316,6 +351,8 @@ class ScreenWidget(Widget):
             if touch == item.touch:
                 item.touch_up = True
                 item.touch = touch
+                # item.double_tap = False
+
         return True
 
     # def getTouch(self):
@@ -352,6 +389,9 @@ class Screen(App):
 
     def getHeight(self):
         return self.s.height
+
+    def getSize(self):
+        return [self.s.width, self.s.height]
 
     def setBackground(self, sprite):
         sprite.setStaticPosition(True)
@@ -397,16 +437,5 @@ class Screen(App):
     def __getitem__(self, i):
         return self.s.__getitem__(i)
     
-        
-if __name__ == "__main__":
-    pygame.init()
-    pygame.mouse.set_visible(False)
-    s = Screen(WIN_WIDTH, WIN_HEIGHT)
-    # s = Screen(640, 480)
-    s.fill((0, 0, 0))
-    spr = Boomerang(0,120)
-    s.append(spr)
-    while True:
-        # s.blit(pygame.image.load("/Users/kiwi/Desktop/old-desktop/desktop/py/b4/library/resources/weapon/boomerang1.png"), (0, 0))
-        s.update()
-        print(s[0])
+    def moveToFront(self, sprite):
+        self.s.moveToFront(sprite)

@@ -89,7 +89,8 @@ class Client():
                 self.send(("{}".format(raw_input()), time.time()))
 
     def send(self, data):
-        self.s.sendto(pickle.dumps(data), self.server)
+        d = data
+        self.s.sendto(pickle.dumps(d), self.server)
 
     def receive(self):
         data, addr = self.s.recvfrom(4096)

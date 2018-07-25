@@ -64,11 +64,62 @@ class Camera(object):
         self.state = Rect(0, 0, width, height)
         self.WIN_WIDTH, self.WIN_HEIGHT = ww, wh
 
+    def setWinWidth(self, width):
+        self.WIN_WIDTH = width
+
+    def setWinHeight(self, height):
+        self.WIN_HEIGHT = height
+
+    def setWinSize(self, width, height):
+        self.WIN_WIDTH = width
+        self.WIN_HEIGHT = height
+
+    def setLevelSize(self, width, height):
+        self.state.w = width
+        self.state.h = height
+
+    def setLevelWidth(self, width):
+        self.state.w = width
+
+    def setLevelHeight(self, height):
+        self.state.h = height
+
+    def getLevelWidth(self):
+        return self.state.w
+
+    def getLevelHeight(self):
+        return self.state.h
+
+    def getLevelSize(self):
+        return self.getLevelWidth(), self.getLevelHeight()
+
+    def collide(self, sprite):
+        x, y = self.apply(sprite)
+
+        if x >= 0 and x < self.WIN_WIDTH:
+            if y >= 0 and y < self.WIN_HEIGHT:
+                return True
+
+        if (x > 0 and x < self.WIN_WIDTH) or (x + sprite.getWidth() > 0 and x + sprite.getWidth() < (0 + self.WIN_WIDTH)):
+            if (y > 0 and y < self.WIN_HEIGHT) or (y + sprite.getHeight() > 0 and y + sprite.getHeight() < (0 + self.WIN_HEIGHT)):
+                return True
+
+        if (y > 0 and y < self.WIN_HEIGHT) or (y + sprite.getHeight() > 0 and y + sprite.getHeight() < (0 + self.WIN_HEIGHT)):
+            if (x == 0):
+                return True
+
+        if (x > 0 and x < self.WIN_WIDTH) or (x + sprite.getWidth() > 0 and x + sprite.getWidth() < (0 + self.WIN_WIDTH)):
+            if (y == 0):
+                return True
+ 
+        return False
+
     def apply(self, target):
         return target.rect.x + self.state.x, target.rect.y + self.state.y
 
     def update(self, target_rect):
         self.state = self.camera_func(self, self.state, target_rect.rect)
+
 
 
 def simple_camera(self, camera, target_rect):
@@ -78,7 +129,6 @@ def simple_camera(self, camera, target_rect):
 
 
 def complex_camera(self, camera, target_rect):
-
     l, t, _, _ = target_rect.rect()
     _, _, w, h = camera.rect()
     l, t, _, _ = -l+(self.WIN_WIDTH/2), -t+(self.WIN_HEIGHT/2), w, h
